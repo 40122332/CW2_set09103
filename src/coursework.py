@@ -1,6 +1,11 @@
 import ConfigParser
-from flask import Flask, redirect, url_for, render_template, flash, abort
+from flask import Flask, redirect, url_for, render_template, flash, abort,\
+request, session, g
+from werkzeung.security import generate_password_hash, check_password_hash
+from contextlib import closing
+from login_form.py import LoginForm
 
+DATABASE = '/tmp/flaskr.db'
 DEBUG =True
 SECRET_KEY ='\xd8\xae/\xee\xd9\xb1\xfc\x85\x85\xb2\xea\xc2\x7f\xeb\x86\x8b\xfdKh\x01\x82h\xea\x17'
 USERNAME = 'admin'
@@ -24,6 +29,22 @@ def init(app):
   except:
     print"Could not read configs from: ", config_location
 
+def init_db():
+  with closing(connect_db()) as db:
+    with app.open_resorces('schema.sql', mode='r') as f:
+      db.cursor().executescript(f.read())
+    db.commit()
+
+@app.before_request
+def before_request():
+  g.db = connect_db()
+
+@app.teardown_request
+def teardown_request(exception):
+  db = getattr(g, 'db', None)
+  if db is not None:
+    db.close()
+
 @app.route('/config/')
 def config():
   str = []
@@ -33,13 +54,59 @@ def config():
   str.append('ip_address:'+app.config['ip_address'])
   return '\t'.join(str)
 
+def connect_db():
+  return sqlite3.connect(app.config['DATABASE'])
+
 @app.route('/')
 def welcome():
-  return "hello"
+  if not session.get('logged_in'):
+    return redirect(url_for('login'))
+  else:
+    return render_template('home.html')
 
+@app.route('/login', methods=['GET','POST'])
+def login():
+  form = LoginForm()
+  if form.validate_on_submit():
+    flash('You logged in as %s'%form.user.username)
+    session['logged_in'] = True
+    return redirect(url_for('welcome'))
+  return render_template('login.html')
+
+@app.route('/new_user', methods=['GET','POST'])
+def new():
+  error=None
+  u=User(request.form['username'], request.form['password'])
+  if request.method == 'POST':
+    g.db.execute('insert into entries (username,\
+    password)values(?,?)',[request.form['name'],u.get_password()])
+    g.db.commit()
+    return redirect(url_for('welcome'))
+
+@app.route('/logout')
+def logout():
+  session.pop('logged_in', None)
+  flash("You were logged out")
+  return redirect(url_for('welcome'))
+
+class User(object):
+
+  def __init__(self, username, password):
+    self.set_password(password)
+    self.username = username
+
+  def set_password(self, password):
+    self.pw_hash = generate_password_hash(password)
+
+  def get_password(self):
+    return self.pw_hash
+
+  def check_password(self, password):
+    return check_password_hash(self.pw_hash, password)
 
 if __name__ == "__main__":
   init(app)
+  init_db
   app.run(
       host=app.config['ip_address'],
       port=int(app.config['port']))
