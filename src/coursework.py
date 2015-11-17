@@ -1,9 +1,10 @@
 import ConfigParser
+import sqlite3
 from flask import Flask, redirect, url_for, render_template, flash, abort,\
 request, session, g
-from werkzeung.security import generate_password_hash, check_password_hash
 from contextlib import closing
-from login_form.py import LoginForm
+from login_form import LoginForm
+from models import User
 
 DATABASE = '/tmp/flaskr.db'
 DEBUG =True
@@ -31,7 +32,7 @@ def init(app):
 
 def init_db():
   with closing(connect_db()) as db:
-    with app.open_resorces('schema.sql', mode='r') as f:
+    with app.open_resource('schema.sql', mode='r') as f:
       db.cursor().executescript(f.read())
     db.commit()
 
@@ -76,12 +77,15 @@ def login():
 @app.route('/new_user', methods=['GET','POST'])
 def new():
   error=None
-  u=User(request.form['username'], request.form['password'])
   if request.method == 'POST':
-    g.db.execute('insert into entries (username,\
-    password)values(?,?)',[request.form['name'],u.get_password()])
+    u=User(request.form['username'], request.form['password'])
+  #  g.db.execute('insert into user (username,\
+   # password)values(%s,%s)'%(request.form['name'],u.get_password())) 
+    g.db.execute('insert into user (username,password) values(\'%s\',\'%s\')'
+    %(request.form['name'], u.get_password()))
     g.db.commit()
     return redirect(url_for('welcome'))
+  return render_template('new_user.html')
 
 @app.route('/logout')
 def logout():
@@ -89,24 +93,10 @@ def logout():
   flash("You were logged out")
   return redirect(url_for('welcome'))
 
-class User(object):
-
-  def __init__(self, username, password):
-    self.set_password(password)
-    self.username = username
-
-  def set_password(self, password):
-    self.pw_hash = generate_password_hash(password)
-
-  def get_password(self):
-    return self.pw_hash
-
-  def check_password(self, password):
-    return check_password_hash(self.pw_hash, password)
 
 if __name__ == "__main__":
   init(app)
-  init_db
+  init_db()
   app.run(
       host=app.config['ip_address'],
       port=int(app.config['port']))

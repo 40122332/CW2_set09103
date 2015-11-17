@@ -1,6 +1,6 @@
-from flask.wtf import Form, StringField, PasswordField, validators
-from coursework.py import User
-
+from flask_wtf import Form
+from wtforms import StringField, PasswordField, validators
+from models import User
 class LoginForm(Form):
   username=StringField('Username', [validators.Required()])
   password=PasswordField('Password', [validators.Required()])

@@ -1,4 +1,5 @@
 DROP TABLE if EXISTS user;
+DROP TABLE if EXISTS message;
 
 CREATE TABLE user(
   id integer primary key autoincrement, 
@@ -9,7 +10,7 @@ CREATE TABLE user(
 CREATE TABLE message(
   id integer primary key autoincrement,
   message text not null,
-  messaeg_user integer not null,
-  FOREIGN KEY (message_list) REFERENCES user(id)
+  message_user integer not null,
+  FOREIGN KEY (message_user) REFERENCES user(id)
 );
 
