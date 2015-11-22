@@ -63,7 +63,11 @@ def welcome():
   if not session.get('logged_in'):
     return redirect(url_for('login'))
   else:
-    return render_template('home.html')
+    if not session.get('new_user'):
+      return render_template('home.html')
+    else:
+      flash('welcom New user')
+      return render_template('home.html')
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -72,18 +76,19 @@ def login():
     flash('You logged in as %s'%form.user.username)
     session['logged_in'] = True
     return redirect(url_for('welcome'))
-  return render_template('login.html')
+  return render_template('login.html', form=form)
 
 @app.route('/new_user', methods=['GET','POST'])
 def new():
   error=None
   if request.method == 'POST':
     u=User(request.form['username'], request.form['password'])
-  #  g.db.execute('insert into user (username,\
-   # password)values(%s,%s)'%(request.form['name'],u.get_password())) 
-    g.db.execute('insert into user (username,password) values(\'%s\',\'%s\')'
-    %(request.form['name'], u.get_password()))
+    pas=u.get_password()
+    nam=u.get_username()
+    g.db.execute('insert into user (username,password)values(?,?)',[nam, pas])
     g.db.commit()
+    session['logged_in'] = True
+    session['new_user'] = True
     return redirect(url_for('welcome'))
   return render_template('new_user.html')
 
@@ -91,6 +96,20 @@ def new():
 def logout():
   session.pop('logged_in', None)
   flash("You were logged out")
+  return redirect(url_for('welcome'))
+
+@app.route('/meassge')
+def message_page():
+  return render_template('message.html')
+
+@app.route('/message_create', methods=['POST'])
+def add_message():
+  form =LoginForm()
+  mess=request.form['message']
+  use=form.user.username
+  g.db.excute('insert into \
+  message(message_text,message_user)values(?,?)',[mess,use])
+  g.db.commit()
   return redirect(url_for('welcome'))
 
 

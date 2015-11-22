@@ -11,17 +11,19 @@ class LoginForm(Form):
 
   def validate(self):
     rv=Form.validate(self)
-    if not rm:
+    if not rv:
       return False
 
     user=User.query.filter_by(
       username=self.username.data).first()
     if user is None:
       self.username.errors.append('Umknown Username')
+      flash('Unkown User name')
       return False
 
     if not user.check_password(self.password.data):
       self.password.errors.append('Invalid Password')
+      flash('Invalid Password')
       return False
 
     self.user=user

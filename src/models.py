@@ -1,5 +1,6 @@
 from werkzeug.security import generate_password_hash, \
 check_password_hash
+from flask import g
 
 class User(object):
 
@@ -15,3 +16,6 @@ class User(object):
 
   def check_password(self, password):
     return check_password_hash(self.pw_hash, password)
+
+  def get_username(self):
+    return self.username
