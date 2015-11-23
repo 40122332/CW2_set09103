@@ -1,6 +1,4 @@
-from werkzeug.security import generate_password_hash, \
-check_password_hash
-from flask import g
+import bcrypt
 
 class User(object):
 
@@ -9,7 +7,7 @@ class User(object):
     self.username = username
 
   def set_password(self, password):
-    self.pw_hash = generate_password_hash(password)
+    self.pw_hash = bcrypt.hashpw(password,bcrypt.gensalt())
 
   def get_password(self):
     return self.pw_hash

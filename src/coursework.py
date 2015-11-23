@@ -1,5 +1,6 @@
 import ConfigParser
 import sqlite3
+import bcrypt
 from flask import Flask, redirect, url_for, render_template, flash, abort,\
 request, session, g
 from contextlib import closing
@@ -24,9 +25,9 @@ def init(app):
       app.config['ip_address'] = config.get("config", "ip_address")
       app.config['port'] = config.get("config", "port")
       app.config['url'] = config.get("config","url")
-      app.config['log_file'] = config.get("logging","name")
-      app.config['log_location'] = config.get("logging","location")
-      app.config['log_level'] = config.get("logging","level")
+    #  app.config['log_file'] = config.get("logging","name")
+    #  app.config['log_location'] = config.get("logging","location")
+    #  app.config['log_level'] = config.get("logging","level")
   except:
     print"Could not read configs from: ", config_location
 
@@ -61,8 +62,12 @@ def connect_db():
 @app.route('/')
 def welcome():
   if not session.get('logged_in'):
-    return redirect(url_for('login'))
+    return render_template('login.html')
   else:
+    cur = g.db.execute('select id from user where username = ?',[session.get('username')])
+    result_id=[dict(id=row[0])for row in cur.fetchall()]
+    this_id=get_id(result_id)
+    session['id']=this_id
     if not session.get('new_user'):
       return render_template('home.html')
     else:
@@ -71,12 +76,33 @@ def welcome():
 
 @app.route('/login', methods=['GET','POST'])
 def login():
-  form = LoginForm()
-  if form.validate_on_submit():
-    flash('You logged in as %s'%form.user.username)
-    session['logged_in'] = True
+  if request.method == 'POST':
+    user = request.form['username']
+    pw = request.form['password']
+    if check_auth(user,pw):
+      session['logged_in']=True
+      session['username']=user
+      return redirect(url_for('welcome'))
+    flash('could not log in')
     return redirect(url_for('welcome'))
-  return render_template('login.html', form=form)
+
+  # form = LoginForm
+  #if form.validate_on_submit(LoginForm):
+   # flash('You logged in as %s'%form.user.username)
+    #session['logged_in'] = True
+   # return redirect(url_for('welcome'))
+ # return render_template('login.html', form=form)
+
+def requires_login(f):
+  @waps(f)
+  def decorated(*args, **kwargs):
+    status = session.get('logged_in', False)
+    if not status:
+      return redirect(url_for('welcome'))
+    return f(*args, **kwargs)
+  return decorated
+
+
 
 @app.route('/new_user', methods=['GET','POST'])
 def new():
@@ -86,6 +112,8 @@ def new():
     pas=u.get_password()
     nam=u.get_username()
     g.db.execute('insert into user (username,password)values(?,?)',[nam, pas])
+    flash(nam)
+    flash(pas)
     g.db.commit()
     session['logged_in'] = True
     session['new_user'] = True
@@ -95,19 +123,46 @@ def new():
 @app.route('/logout')
 def logout():
   session.pop('logged_in', None)
+  session.pop('new_user', None)
+  session.pop('username', None)
+  session.pop('id', None)
   flash("You were logged out")
   return redirect(url_for('welcome'))
 
-@app.route('/meassge')
+def check_auth(username, password):
+  flash(username)
+  flash(password)
+  cur = g.db.execute('select username, password from user where username = ? ',[username])
+  result_u=[dict(name=row[0])for row in cur.fetchall()]
+  result_pass=[dict(pw=row[1])for row in cur.fetchall()]
+  result_user = get_use(result_u)
+  result_pw = get_pass(result_pass)
+  if (username == result_user):
+#  and result_pass == bcrypt.hashpw(password.encode('utf-8'),result_pw)):
+    return True
+  return False
+
+def get_use(user):
+  for x in user:
+    return x['name']
+
+def get_pass(password):
+  for x in password:
+    return x['pw']
+
+def get_id(id):
+  for x in id:
+    return x['id']
+
+@app.route('/message')
 def message_page():
   return render_template('message.html')
 
 @app.route('/message_create', methods=['POST'])
 def add_message():
-  form =LoginForm()
   mess=request.form['message']
-  use=form.user.username
-  g.db.excute('insert into \
+  use=session.get('id')
+  g.db.execute('insert into \
   message(message_text,message_user)values(?,?)',[mess,use])
   g.db.commit()
   return redirect(url_for('welcome'))

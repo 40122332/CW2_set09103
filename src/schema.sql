@@ -9,8 +9,9 @@ CREATE TABLE user(
 
 CREATE TABLE message(
   id integer primary key autoincrement,
-  message text not null,
+  message_text not null,
   message_user integer not null,
   FOREIGN KEY (message_user) REFERENCES user(id)
 );
 
+INSERT into user (username,password)values("Kate","$2a$12$xBNa4/8eP0sM6pgJRawt6u0qfPhWtP2WbNmsXlg59jFsTakKmzZQ2")

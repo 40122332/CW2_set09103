@@ -17,8 +17,8 @@ class LoginForm(Form):
     user=User.query.filter_by(
       username=self.username.data).first()
     if user is None:
-      self.username.errors.append('Umknown Username')
-      flash('Unkown User name')
+      self.username.errors.append('Unknown Username')
+      flash('Unknown User name')
       return False
 
     if not user.check_password(self.password.data):
