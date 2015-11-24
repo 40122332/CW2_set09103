@@ -13,4 +13,11 @@
     </div>
   </div>
 </nav>
+{% for mess in message %}
+<div>
+  <ul class = messages>
+     <p>MESSAGE IS:{{ mess.message }}</p>
+  </ul>
+</div>
+{% endfor %}
 {% endblock %}

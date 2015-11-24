@@ -65,14 +65,17 @@ def welcome():
     return render_template('login.html')
   else:
     cur = g.db.execute('select id from user where username = ?',[session.get('username')])
-    result_id=[dict(id=row[0])for row in cur.fetchall()]
-    this_id=get_id(result_id)
-    session['id']=this_id
+    result_id=cur.fetchall()
+    id = result_id[0]
+    session['id']=id
+    print id
+    cur1 = g.db.execute('select message_text from message where  message_user=?',[1])
+    message = [dict(message=row[0])for row in cur.fetchall()]
     if not session.get('new_user'):
       return render_template('home.html')
     else:
       flash('welcom New user')
-      return render_template('home.html')
+      return render_template('home.html', message=message)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -130,40 +133,33 @@ def logout():
   return redirect(url_for('welcome'))
 
 def check_auth(username, password):
-  flash(username)
-  flash(password)
   cur = g.db.execute('select username, password from user where username = ? ',[username])
-  result_u=[dict(name=row[0])for row in cur.fetchall()]
-  result_pass=[dict(pw=row[1])for row in cur.fetchall()]
-  result_user = get_use(result_u)
-  result_pw = get_pass(result_pass)
-  if (username == result_user):
-#  and result_pass == bcrypt.hashpw(password.encode('utf-8'),result_pw)):
+  result = cur.fetchall()
+  all = result[0]
+  u = all[0]
+  p = all[1]
+  print u, p
+  #result_u=[dict(name=row[0])for row in cur.fetchall()]
+  #result_pass=[dict(pw=row[1])for row in cur.fetchall()]
+
+  #print result_u, result_pass
+
+  #result_user = get_use(result_u)
+  #result_pw = get_pass(result_pass)
+  if (username == u) and p == bcrypt.hashpw(password.encode('utf-8'),p):
     return True
   return False
-
-def get_use(user):
-  for x in user:
-    return x['name']
-
-def get_pass(password):
-  for x in password:
-    return x['pw']
-
-def get_id(id):
-  for x in id:
-    return x['id']
 
 @app.route('/message')
 def message_page():
   return render_template('message.html')
 
-@app.route('/message_create', methods=['POST'])
+@app.route('/message_create', methods=['GET','POST'])
 def add_message():
   mess=request.form['message']
   use=session.get('id')
   g.db.execute('insert into \
-  message(message_text,message_user)values(?,?)',[mess,use])
+  message(message_text,message_user)values(?,?)',[mess,1])
   g.db.commit()
   return redirect(url_for('welcome'))
 
