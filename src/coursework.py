@@ -64,18 +64,16 @@ def welcome():
   if not session.get('logged_in'):
     return render_template('login.html')
   else:
-    cur = g.db.execute('select id from user where username = ?',[session.get('username')])
-    result_id=cur.fetchall()
-    id = result_id[0]
-    session['id']=id
-    print id
-    cur1 = g.db.execute('select message_text from message where  message_user=?',[1])
-    message = [dict(message=row[0])for row in cur.fetchall()]
+    cur = g.db.execute('select message."message_text" from message inner join user on message."message_user"=user."id" where user.username=?',[session.get('username')])
+    message = [dict(message_text=row[0])for row in cur.fetchall()]
+    cur1 = g.db.execute('select id from user where username = ?',[session.get('username')])
     if not session.get('new_user'):
-      return render_template('home.html')
+      (row,) = cur1.fetchone()
+      session['id']=row
+      return render_template('posts.html', message=message)
     else:
       flash('welcom New user')
-      return render_template('home.html', message=message)
+      return render_template('posts.html', message=message)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -158,10 +156,17 @@ def message_page():
 def add_message():
   mess=request.form['message']
   use=session.get('id')
+  print use
   g.db.execute('insert into \
-  message(message_text,message_user)values(?,?)',[mess,1])
+  message(message_text,message_user)values(?,?)',[mess,use])
   g.db.commit()
   return redirect(url_for('welcome'))
+
+@app.route('/world_feed')
+def world():
+  cur = g.db.execute('select mlessage_text from message')
+  messages = [dict(message = row[0])for row in cur.fetchall()]
+  return render_template('world_feed.html', messages=messages)
 
 
 if __name__ == "__main__":

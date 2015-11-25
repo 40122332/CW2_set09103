@@ -9,7 +9,7 @@ CREATE TABLE user(
 
 CREATE TABLE message(
   id integer primary key autoincrement,
-  message_text not null,
+  message_text text not null, 
   message_user integer not null,
   FOREIGN KEY (message_user) REFERENCES user(id)
 );

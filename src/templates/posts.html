@@ -1,0 +1,11 @@
+{% extends "home.html" %}
+{% block body %}
+<div>
+  <ul class = message>
+{% for mess in message %}
+     <ul>My message: {{ mess.message_text }}</ul>
+{% endfor %}
+  </ul>
+</div>
+{% endblock %}
+
