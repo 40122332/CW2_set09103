@@ -1,6 +1,11 @@
 {% extends "home.html" %}
 {% block body %}
 {% for nam in names %}
-<ul>{{ nam.name }}</ul>
+<ul> 
+<form class="navbar-form navbar-left" action="/friend_request/">
+<label for="button" name="label_username" >{{ nam.name}}</label>
+<input class="btn btn-default" type="submit" id="button" value ="send request" >
+</form>
+</ul>
 {% endfor %}
-{% endblock%}
+{% endblock %}
