@@ -1,5 +1,6 @@
 DROP TABLE if EXISTS user;
 DROP TABLE if EXISTS message;
+DROP TABLE if EXISTS friends;
 
 CREATE TABLE user(
   id integer primary key autoincrement, 
@@ -14,4 +15,16 @@ CREATE TABLE message(
   FOREIGN KEY (message_user) REFERENCES user(id)
 );
 
-INSERT into user (username,password)values("Kate","$2a$12$xBNa4/8eP0sM6pgJRawt6u0qfPhWtP2WbNmsXlg59jFsTakKmzZQ2")
+CREATE TABLE friends(
+  user_one integer not null,
+  user_two integer not null,
+  status integer not null,
+  action_user integer not null
+
+ );
+
+INSERT into user
+(username,password)values("Kate","$2a$12$xBNa4/8eP0sM6pgJRawt6u0qfPhWtP2WbNmsXlg59jFsTakKmzZQ2");
+
+INSERT into user
+(username,password)values("James","$2a$12$xBNa4/8eP0sM6pgJRawt6u0qfPhWtP2WbNmsXlg59jFsTakKmzZQ2");

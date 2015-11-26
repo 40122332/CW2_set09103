@@ -66,7 +66,9 @@ def welcome():
   else:
     cur = g.db.execute('select message."message_text" from message inner join user on message."message_user"=user."id" where user.username=?',[session.get('username')])
     message = [dict(message_text=row[0])for row in cur.fetchall()]
-    cur1 = g.db.execute('select id from user where username = ?',[session.get('username')])
+    cur1 = g.db.execute('select id from user where username =?',[session.get('username')])
+    if request.method == 'POST':
+      return redirect(url_for('friend_search', search=request.form['search']))
     if not session.get('new_user'):
       (row,) = cur1.fetchone()
       session['id']=row
@@ -164,10 +166,15 @@ def add_message():
 
 @app.route('/world_feed')
 def world():
-  cur = g.db.execute('select mlessage_text from message')
+  cur = g.db.execute('select message_text from message')
   messages = [dict(message = row[0])for row in cur.fetchall()]
   return render_template('world_feed.html', messages=messages)
 
+@app.route('/search/<search>')
+def friend_search(search=None):
+  cur = g.db.execute('select username from user where username like ?',["%"+search+"%"])
+  names = [disct(id=row[0])for row in cur.fetchall()]
+  return render_template('friend_search', names = names)
 
 if __name__ == "__main__":
   init(app)

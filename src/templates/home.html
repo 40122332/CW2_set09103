@@ -9,6 +9,14 @@
         <li><a href="{{url_for('welcome')}}">My Feed</a></li>
         <li><a href="{{url_for('logout')}}">LogOut</a></li>
         <li><a href="{{url_for('message_page')}}">Wite message</a></li>
+        <li><form class="navbar-form navbar-left" action="" method ="post" name ="search_form">
+        <div class="form-group">
+          <input class="form-control" type="text" name ="search"
+          placeholder="search someone">
+        </div>
+          <input class="btn btn-default"
+          type="submit"value="Search"id="search_button">
+          </form></li>
       </ul>
     </div>
 </nav>
