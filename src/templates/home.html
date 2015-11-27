@@ -18,10 +18,14 @@
               <li><a href="#">no notifacations</a></li>
             {% for note in notifacation %}
               <li><form class="navbar-form navbar-left"
-              action="/add_friend/">{{ note.user_one }}
-              <input type="hidden" value={{not.user_one}} name="user_one">
-              <button class="btn
-              btn-default" type="submit" >add</button></form>
+              action="/add_friend/">
+              <input type="hidden" value={{note.user_one}} id="user_one">
+              <input type="hidden" value={{note.user_two}} id="user_two">
+              <input type="hidden" value={{note.status}} id="status">
+              <input type="hidden" value={{note.action_user}} id="action_user">
+              <h1 onload="user_where()" id="sender"></h1>
+              <input type="button" class="btn
+              btn-default" value="add" ></form>
               <form class="navbar-form navbar-left" action="/remove_friend/"><button class
               ="btn btn-default" type="submit">reject</button></form></li>
             {% endfor  %}

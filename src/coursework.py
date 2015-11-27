@@ -189,7 +189,7 @@ def friend_notify(add=None):
   g.db.commit()
   return redirect(url_for('welcome'))
 
-@app.route('add_friend/<friend>')
+@app.route('/add_friend/<friend>')
 def add_friend(friend=None):
   g.db.execute('update friends set status=1')
 
