@@ -17,7 +17,13 @@
           <ul class="dropdown-menu">
               <li><a href="#">no notifacations</a></li>
             {% for note in notifacation %}
-              <li><a href="#">{{ note.user_one }}</a></li>
+              <li><form class="navbar-form navbar-left"
+              action="/add_friend/">{{ note.user_one }}
+              <input type="hidden" value={{not.user_one}} name="user_one">
+              <button class="btn
+              btn-default" type="submit" >add</button></form>
+              <form class="navbar-form navbar-left" action="/remove_friend/"><button class
+              ="btn btn-default" type="submit">reject</button></form></li>
             {% endfor  %}
           </ul>
             </div>

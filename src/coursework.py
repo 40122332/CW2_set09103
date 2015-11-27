@@ -67,9 +67,9 @@ def welcome():
     cur = g.db.execute('select message."message_text" from message inner join user on message."message_user"=user."id" where user.username=?',[session.get('username')])
     message = [dict(message_text=row[0])for row in cur.fetchall()]
     cur1 = g.db.execute('select id from user where username =?',[session.get('username')])
-    cur2 = g.db.execute('select user_one, user_two, status from friends where (user_one = ? or user_two\
-    =?) and status = 0',[session.get('id'),session.get('id')])
-    notifacation = [dict(user_one=row[0], user_two=row[1],status=row[2],action_user=row[3])for row in cur.fetchall()]
+    cur2 = g.db.execute('select * from friends where (user_one = ? or\
+    user_two=?) and status = ?',[session.get('id'),session.get('id'),0])
+    notifacation = [dict(user_one=row[0],user_tow=row[1],status=row[2],action_user=row[3])for row in cur2.fetchall()]
     print notifacation
     if request.method == 'POST':
       return redirect(url_for('friend_search', search=request.form['search']))
@@ -181,13 +181,18 @@ def friend_search():
   names = [dict(id=row[0],name=row[1])for row in cur.fetchall()]
   return render_template('friend_search.html', names = names)
 
-@app.route('/friend_request/')
-def friend_notify():
-  notify=request.args.get('label_username', '')
+@app.route('/friend_request/<add>')
+def friend_notify(add=None):
+  print add
   g.db.execute('insert into friends(user_one,user_two, status,\
-  action_user)values (?,?,?,?)',[session.get('id'),notify,0,session.get('id')])
+  action_user)values (?,?,?,?)',[session.get('id'),add,0,session.get('id')])
   g.db.commit()
   return redirect(url_for('welcome'))
+
+@app.route('add_friend/<friend>')
+def add_friend(friend=None):
+  g.db.execute('update friends set status=1')
+
 
 if __name__ == "__main__":
   init(app)

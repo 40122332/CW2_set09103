@@ -3,8 +3,9 @@
 {% for nam in names %}
 <ul> 
 <form class="navbar-form navbar-left" action="/friend_request/">
-<label for="button" name="label_username" >{{ nam.name}}</label>
-<input class="btn btn-default" type="submit" id="button" value ="send request" >
+<label for="button" name="label_username" value = {{ nam.id }}>{{ nam.name}}</label>
+<button class="btn btn-default" type="submit" id="button" value ={{ nam.id }}
+>send request</button>
 </form>
 </ul>
 {% endfor %}
