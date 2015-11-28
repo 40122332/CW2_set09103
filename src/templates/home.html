@@ -9,6 +9,7 @@
         <li><a href="{{url_for('welcome')}}">My Feed</a></li>
         <li><a href="{{url_for('logout')}}">LogOut</a></li>
         <li><a href="{{url_for('message_page')}}">Wite message</a></li>
+        <li><a href="{{url_for('show_friends')}}">Friends</a></li>
         <li>
         <div class="dropdown">
           <button class ="btn btn-default dropdown-toggle" type="button"
@@ -18,14 +19,16 @@
               <li><a href="#">no notifacations</a></li>
             {% for note in notifacation %}
               <li><form class="navbar-form navbar-left"
-              action="{{url_for('add_friend')}}">
-              <input type="hidden" value={{note.user_one}} id="user_one">
+              action="{{url_for('add_friend')}}" method=post>
+             <!-- <input type="hidden" value={{note.user_one}} id="user_one">
               <input type="hidden" value={{note.user_two}} id="user_two">
               <input type="hidden" value={{note.status}} id="status">
-              <input type="hidden" value={{note.action_user}} id="action_user"> 
-              <h1 id="sender"></h1>
+              <input type="hidden" value={{note.action_user}}
+              id="action_user">--> 
+              <h1 id="sender" >{{note.action_user}}</h1>
               <script>which_user()</script>
-              <button class="btn btn-default" type="submit" >add</button></form>
+              <button class="btn btn-default" name="sent" type="submit" 
+              value="{{note.action_user}}">add</button></form>
               <form class="navbar-form navbar-left" action="/remove_friend/"><button class
               ="btn btn-default" type="submit">reject</button></form></li>
             {% endfor  %}

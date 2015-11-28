@@ -1,0 +1,24 @@
+INFO | 2015-11-28 10:05:08,006 | coursework |  check_auth | User Logged in Kate
+INFO | 2015-11-28 10:06:49,911 | coursework |  add_message | User created a messageKate
+INFO | 2015-11-28 11:07:31,984 | coursework |  logout | User Logged out :Kate
+INFO | 2015-11-28 11:07:43,160 | coursework |  check_auth | User Logged in James
+INFO | 2015-11-28 11:12:12,716 | coursework |  logout | User Logged out :James
+INFO | 2015-11-28 11:12:24,452 | coursework |  check_auth | User Logged in Kate
+INFO | 2015-11-28 11:12:30,366 | coursework |  logout | User Logged out :Kate
+INFO | 2015-11-28 11:12:40,566 | coursework |  check_auth | User Logged in James
+INFO | 2015-11-28 11:16:38,360 | coursework |  logout | User Logged out :James
+INFO | 2015-11-28 11:16:49,328 | coursework |  check_auth | User Logged in Kate
+INFO | 2015-11-28 11:17:00,638 | coursework |  logout | User Logged out :Kate
+INFO | 2015-11-28 11:17:22,686 | coursework |  check_auth | User Logged in James
+INFO | 2015-11-28 12:06:28,853 | coursework |  logout | User Logged out :James
+INFO | 2015-11-28 12:06:38,718 | coursework |  check_auth | User Logged in Kate
+INFO | 2015-11-28 12:07:31,761 | coursework |  logout | User Logged out :Kate
+INFO | 2015-11-28 12:07:44,694 | coursework |  check_auth | User Logged in James
+INFO | 2015-11-28 12:08:23,746 | coursework |  add_message | User created a message: James
+INFO | 2015-11-28 12:08:29,807 | coursework |  add_message | User created a message: James
+INFO | 2015-11-28 12:08:43,182 | coursework |  logout | User Logged out :James
+INFO | 2015-11-28 12:08:52,615 | coursework |  check_auth | User Logged in Kate
+INFO | 2015-11-28 12:09:08,166 | coursework |  add_message | User created a message: Kate
+INFO | 2015-11-28 12:09:26,589 | coursework |  logout | User Logged out :Kate
+INFO | 2015-11-28 12:09:36,113 | coursework |  check_auth | User Logged in James
+INFO | 2015-11-28 12:12:41,780 | coursework |  logout | User Logged out :James

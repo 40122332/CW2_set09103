@@ -1,0 +1,13 @@
+{% extends "home.html" %}
+{% block body %}
+<div>
+<ul class = friend>
+{% for f1 in friend1%}
+<ul>{{f1.name}}</ul>
+{% endfor %}
+{% for f2 in friend2 %}
+<ul>{{f2.name}}</ul>
+{% endfor %}
+</ul>
+</div>
+{% endblock %}

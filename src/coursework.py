@@ -1,11 +1,12 @@
 import ConfigParser
+import logging
 import sqlite3
 import bcrypt
 from flask import Flask, redirect, url_for, render_template, flash, abort,\
 request, session, g
 from contextlib import closing
-from login_form import LoginForm
 from models import User
+from logging.handlers import RotatingFileHandler
 
 DATABASE = '/tmp/flaskr.db'
 DEBUG =True
@@ -25,9 +26,9 @@ def init(app):
       app.config['ip_address'] = config.get("config", "ip_address")
       app.config['port'] = config.get("config", "port")
       app.config['url'] = config.get("config","url")
-    #  app.config['log_file'] = config.get("logging","name")
-    #  app.config['log_location'] = config.get("logging","location")
-    #  app.config['log_level'] = config.get("logging","level")
+      app.config['log_file'] = config.get("logging","name")
+      app.config['log_location'] = config.get("logging","location")
+      app.config['log_level'] = config.get("logging","level")
   except:
     print"Could not read configs from: ", config_location
 
@@ -36,6 +37,17 @@ def init_db():
     with app.open_resource('schema.sql', mode='r') as f:
       db.cursor().executescript(f.read())
     db.commit()
+
+def logs(app):
+  log_pathname=app.config['log_location']+app.config['log_file']
+  file_handler=RotatingFileHandler(log_pathname,maxBytes=1024*1024*10,
+  backupCount=1024)
+  file_handler.setLevel(app.config['log_level'])
+  formatter = logging.Formatter("%(levelname)s | %(asctime)s | %(module)s |\
+  %(funcName)s | %(message)s")
+  file_handler.setFormatter(formatter)
+  app.logger.setLevel(app.config['log_level'])
+  app.logger.addHandler(file_handler)
 
 @app.before_request
 def before_request():
@@ -67,14 +79,14 @@ def welcome():
     cur = g.db.execute('select message."message_text" from message inner join user on message."message_user"=user."id" where user.username=?',[session.get('username')])
     message = [dict(message_text=row[0])for row in cur.fetchall()]
     cur1 = g.db.execute('select id from user where username =?',[session.get('username')])
+    (row,) = cur1.fetchone()
+    session['id']=row
+    cur2 = g.db.execute('select * from friends where (user_one = ? or\
+    user_two=?) and (status = ? and action_user!=?)',[session.get('id'),session.get('id'),0,session.get('id')])
+    notifacation = [dict(user_one=row[0],user_two=row[1],status=row[2],action_user=row[3])for row in cur2.fetchall()]
     if request.method == 'POST':
       return redirect(url_for('friend_search', search=request.form['search']))
     if not session.get('new_user'):
-      (row,) = cur1.fetchone()
-      session['id']=row
-      cur2 = g.db.execute('select * from friends where (user_one = ? or\
-      user_two=?) and status = ?',[session.get('id'),session.get('id'),0])
-      notifacation = [dict(user_one=row[0],user_two=row[1],status=row[2],action_user=row[3])for row in cur2.fetchall()]
       return render_template('posts.html', message=message, notifacation=notifacation )
     else:
       flash('welcom New user')
@@ -100,16 +112,17 @@ def new():
     pas=u.get_password()
     nam=u.get_username()
     g.db.execute('insert into user (username,password)values(?,?)',[nam, pas])
-    flash(nam)
-    flash(pas)
     g.db.commit()
     session['logged_in'] = True
     session['new_user'] = True
+    session['username'] = nam
+    app.logger.info("new user :"+nam)
     return redirect(url_for('welcome'))
   return render_template('new_user.html')
 
 @app.route('/logout')
 def logout():
+  app.logger.info("User Logged out :"+session.get('username'))
   session.pop('logged_in', None)
   session.pop('new_user', None)
   session.pop('username', None)
@@ -123,15 +136,8 @@ def check_auth(username, password):
   all = result[0]
   u = all[0]
   p = all[1]
-  print u, p
-  #result_u=[dict(name=row[0])for row in cur.fetchall()]
-  #result_pass=[dict(pw=row[1])for row in cur.fetchall()]
-
-  #print result_u, result_pass
-
-  #result_user = get_use(result_u)
-  #result_pw = get_pass(result_pass)
   if (username == u) and p == bcrypt.hashpw(password.encode('utf-8'),p):
+    app.logger.info("User Logged in "+u)
     return True
   return False
 
@@ -143,7 +149,7 @@ def message_page():
 def add_message():
   mess=request.form['message']
   use=session.get('id')
-  print use
+  app.logger.info('User created a message: '+session.get('username'))
   g.db.execute('insert into \
   message(message_text,message_user)values(?,?)',[mess,use])
   g.db.commit()
@@ -174,11 +180,33 @@ def friend_notify():
 
 @app.route('/adding_friend', methods=['GET','POST'])
 def add_friend():
-  g.db.execute('update friends set status=1')
+  sent=request.form['sent']
+  print sent
+  g.db.execute('update friends set status=1, action_user = ? where user_one=?\
+  and user_two=?',[session.get('id'),sent,session.get('id')])
+  g.db.commit()
+  return redirect(url_for('welcome'))
 
+@app.route('/My_friends')
+def show_friends():
+  g.db.execute('update friends set action_user = ? where (user_one=?\
+  or user_two=?)',[session.get('id'),session.get('id'),session.get('id')])
+  g.db.commit()
+  cur = g.db.execute('select user.username from user inner join friends on\
+  user.id=friends.user_one where (user_one=? or user_two=?)and status=1',[session.get('id'), session.get('id')])
+  cur2 = g.db.execute('select user.username from user inner join friends on\
+  user.id=friends.user_two where (user_one=? or user_two=?)and status =1',[session.get('id'), session.get('id')])
+  friend1 = [dict(name=row[0])for row in cur.fetchall()]
+  friend2 = [dict(name=row[0])for row in cur2.fetchall()]
+  return render_template('friend.html',friend1=friend1,friend2=friend2)
+
+@app.errorhandler(404)
+def page_not_found(error):
+  return redirect(url_for('welcome')), 404
 
 if __name__ == "__main__":
   init(app)
+  logs(app)
   init_db()
   app.run(
       host=app.config['ip_address'],
