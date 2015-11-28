@@ -2,10 +2,9 @@
 {% block body %}
 {% for nam in names %}
 <ul> 
-<form class="navbar-form navbar-left" action="/friend_request/">
-<label for="button" name="label_username" value = {{ nam.id }}>{{nam.name}}</label>
-<button class="btn btn-default" type="submit" value ={{ nam.id }}
->send request</button>
+<form class="navbar-form navbar-left" action="{{url_for('friend_notify')}}" method=post>
+<label for="button" name="label_username" >{{nam.name}}</label>
+<button class="btn btn-default" name="id" type="submit" value ="{{nam.id}}">send request</button>
 </form>
 </ul>
 {% endfor %}
