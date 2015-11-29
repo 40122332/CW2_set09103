@@ -1,10 +1,10 @@
 {% include "base.html" %}
 <nav class="navbar navbar-default">
-  <div class="container">
-    <div class="nav navbar-header">
+  <div class="container-fluid">
+    <div class="navbar-header">
       <h1>Welcome</h1>
     </div>
-      <ul class="nav navnar-nav">
+      <ul class="nav navbar-nav">
         <li><a href="{{url_for('world')}}">World Feed</a></li>
         <li><a href="{{url_for('welcome')}}">My Feed</a></li>
         <li><a href="{{url_for('logout')}}">LogOut</a></li>
@@ -16,21 +16,16 @@
           data-toggle="dropdown">Notifacations<span
           class="caret"></span></button>
           <ul class="dropdown-menu">
-              <li><a href="#">no notifacations</a></li>
             {% for note in notifacation %}
-              <li><form class="navbar-form navbar-left"
-              action="{{url_for('add_friend')}}" method=post>
-             <!-- <input type="hidden" value={{note.user_one}} id="user_one">
-              <input type="hidden" value={{note.user_two}} id="user_two">
-              <input type="hidden" value={{note.status}} id="status">
-              <input type="hidden" value={{note.action_user}}
-              id="action_user">--> 
-              <h1 id="sender" >{{note.action_user}}</h1>
-              <script>which_user()</script>
+            <li><h1 id="sender" >{{note.action_user}}</h1> 
+              <form class="navbar-form navbar-left"
+              action="{{url_for('add_friend')}}" method=post> 
               <button class="btn btn-default" name="sent" type="submit" 
               value="{{note.action_user}}">add</button></form>
-              <form class="navbar-form navbar-left" action="/remove_friend/"><button class
-              ="btn btn-default" type="submit">reject</button></form></li>
+              <form class="navbar-form navbar-right"
+              action="{{url_for('reject_friend')}}" method=post><button class
+              ="btn btn-default" name="reject" type="submit"
+              value="{{note.action_user}}">reject</button></form></li>
             {% endfor  %}
           </ul>
             </div>

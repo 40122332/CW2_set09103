@@ -76,21 +76,31 @@ def welcome():
   if not session.get('logged_in'):
     return render_template('login.html')
   else:
-    cur = g.db.execute('select message."message_text" from message inner join user on message."message_user"=user."id" where user.username=?',[session.get('username')])
-    message = [dict(message_text=row[0])for row in cur.fetchall()]
     cur1 = g.db.execute('select id from user where username =?',[session.get('username')])
     (row,) = cur1.fetchone()
     session['id']=row
+    cur = g.db.execute('select message."message_text", user.username from user inner join \
+    message on user."id"=message."message_user" inner join friends on\
+    (user."id"= friends."user_one") or (user."id"= friends."user_two") where\
+    (friends."user_one"=? or friends."user_two"=?) and friends.status=? and\
+    message."message_user"!=?',[session.get('id'),
+    session.get('id'),1,session.get('id')])
+    message = [dict(message_text=row[0], name=row[1])for row in cur.fetchall()]
+    cur3 = g.db.execute('select message_text from message where\
+    message_user=?',[session.get('id')])
+    messageuser = [dict(message_text=row[0])for row in cur3.fetchall()]
     cur2 = g.db.execute('select * from friends where (user_one = ? or\
     user_two=?) and (status = ? and action_user!=?)',[session.get('id'),session.get('id'),0,session.get('id')])
     notifacation = [dict(user_one=row[0],user_two=row[1],status=row[2],action_user=row[3])for row in cur2.fetchall()]
     if request.method == 'POST':
       return redirect(url_for('friend_search', search=request.form['search']))
     if not session.get('new_user'):
-      return render_template('posts.html', message=message, notifacation=notifacation )
+      return render_template('posts.html', message=message,
+      messageuser=messageuser, notifacation=notifacation )
     else:
       flash('welcom New user')
-      return render_template('posts.html', message=message, notifacation=notifacation)
+      return render_template('posts.html',
+      message=message, messageuser=messageuser, notifacation=notifacation)
 
 @app.route('/login', methods=['GET','POST'])
 def login():
@@ -181,7 +191,6 @@ def friend_notify():
 @app.route('/adding_friend', methods=['GET','POST'])
 def add_friend():
   sent=request.form['sent']
-  print sent
   g.db.execute('update friends set status=1, action_user = ? where user_one=?\
   and user_two=?',[session.get('id'),sent,session.get('id')])
   g.db.commit()
@@ -193,12 +202,24 @@ def show_friends():
   or user_two=?)',[session.get('id'),session.get('id'),session.get('id')])
   g.db.commit()
   cur = g.db.execute('select user.username from user inner join friends on\
-  user.id=friends.user_one where (user_one=? or user_two=?)and status=1',[session.get('id'), session.get('id')])
+  user.id=friends.user_one where (user_one=? or user_two=?)and status=1 and\
+  user.id!=?',[session.get('id'),
+  session.get('id'),session.get('id')])
   cur2 = g.db.execute('select user.username from user inner join friends on\
-  user.id=friends.user_two where (user_one=? or user_two=?)and status =1',[session.get('id'), session.get('id')])
+  user.id=friends.user_two where (user_one=? or user_two=?)and status =1 and\
+  user.id!=?',[session.get('id'), session.get('id'), session.get('id')])
   friend1 = [dict(name=row[0])for row in cur.fetchall()]
   friend2 = [dict(name=row[0])for row in cur2.fetchall()]
-  return render_template('friend.html',friend1=friend1,friend2=friend2)
+  return render_template('friend.html',friend1=friend1, friend2=friend2)
+
+@app.route('/reject_friend', methods=['GET','POST'])
+def reject_friend():
+  reject=request.form['reject']
+  g.db.execute('delete from friends where (user_one=?  and user_two=? ) or\
+  (user_one=? and\
+  user_two=?)',[session.get('id'),reject,reject,session.get('id')] )
+  g.db.commit()
+  return redirect(url_for('welcome'))
 
 @app.errorhandler(404)
 def page_not_found(error):

@@ -19,8 +19,9 @@ CREATE TABLE friends(
   user_one integer not null,
   user_two integer not null,
   status integer not null,
-  action_user integer not null
-
+  action_user integer not null,
+  FOREIGN KEY (user_one) REFERENCES user(id)
+  FOREIGN KEY (user_two) REFERENCES user(id)
  );
 
 INSERT into user

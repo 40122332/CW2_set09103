@@ -1,11 +1,16 @@
 {% extends "home.html" %}
 {% block body %}
 <div>
-  <ul class = message>
-{% for mess in message %}
-     <ul>My message: {{ mess.message_text }}</ul>
+{% for mess in messageuser %}
+     <ul class="thumbnail">
+     <p>My message: {{ mess.message_text }}</p>
+     </ul>
 {% endfor %}
-  </ul>
+</div>
+<div>
+{% for message in message %}
+  <ul class="thumbnail">{{ message.name }} : {{message.message_text}} </ul>
+{% endfor %}
 </div>
 {% endblock %}
 
